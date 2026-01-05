@@ -1,4 +1,6 @@
-﻿namespace BookstoreApplication.Models
+﻿using System.Text.Json.Serialization;
+
+namespace BookstoreApplication.Models
 {
     public class Author
     {
@@ -7,6 +9,7 @@
         public required string Biography { get; set; }
         public DateTime DateOfBirth { get; set; }
         
-        public ICollection<AuthorAward> AuthorAwards { get; set; } 
+        [JsonIgnore]
+        public ICollection<AuthorAward> AuthorAwards { get; set; } = new List<AuthorAward>(); 
     }
 }
