@@ -1,6 +1,7 @@
 ﻿using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,62 +12,112 @@ namespace BookstoreApplication.Controllers
     [ApiController]
     public class AuthorsController : ControllerBase
     {
-        private readonly AuthorRepository _authorRepository;
-        public AuthorsController(AuthorRepository authorRepository)
+        private readonly AuthorService _authorService;
+        
+        public AuthorsController(AppDbContext context)
         {
-            _authorRepository = authorRepository;
+            _authorService = new AuthorService(context) ;
         }
+        
         // GET: api/authors
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult<List<Author>>> GetAll()
         {
-            return Ok(_authorRepository.GetAll());
+            try
+            {
+                var authors = await _authorService.GetAll();
+                return Ok(authors);
+            }catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         // GET api/authors/5
         [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
+        public async Task<ActionResult<Author>> GetOne(int id)
         {
-            var author = _authorRepository.GetOne(id);
-            if (author == null)
+            try
             {
-                return NotFound();
+                var author = await _authorService.GetOne(id);
+                return Ok(author);
             }
-            return Ok(author);
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // POST api/authors
         [HttpPost]
-        public IActionResult Post(Author author)
+        public async Task<ActionResult<Author>> Post(Author author)
         {
-            _authorRepository.Add(author);
-            return Ok(author);
+            try
+            {
+                var createdAuthor = await _authorService.Create(author);
+                return Created(string.Empty, createdAuthor);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // PUT api/authors/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, Author author)
+        public async Task<ActionResult<Author>> Put(int id, Author author)
         {
-            if (id != author.Id)
+            try
             {
-                return BadRequest();
+                var updatedAuthor = await _authorService.Update(author);
+                return Ok(updatedAuthor);
+
             }
-            
-            return Ok(_authorRepository.Update(author));
+            catch (ArgumentException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // DELETE api/authors/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var success = _authorRepository.Delete(id);
-
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var success = await _authorService.Delete(id);
 
-            return NoContent();
+                if (!success)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
     }
 }

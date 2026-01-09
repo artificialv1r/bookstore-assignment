@@ -1,6 +1,7 @@
 ﻿using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,64 +12,114 @@ namespace BookstoreApplication.Controllers
     [ApiController]
     public class PublishersController : ControllerBase
     {
-        private readonly PublisherRepository _publisherRepository;
+        private readonly PublisherService _publisherService;
 
-        public PublishersController(PublisherRepository publisherRepository)
+        public PublishersController(AppDbContext context)
         {
-            _publisherRepository = publisherRepository;
+            _publisherService = new PublisherService(context);
         }
         
         // GET: api/publishers
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult<List<Publisher>>> GetAll()
         {
-            return Ok(_publisherRepository.GetAll());
+            try
+            {
+                var publishers = await _publisherService.GetAll();
+                return Ok(publishers);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // GET api/publishers/5
         [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
+        public async Task<ActionResult<Publisher>> GetOne(int id)
         {
-            var publisher = _publisherRepository.GetOne(id);
-            if (publisher == null)
+            try
             {
-                return NotFound();
+                var publisher = await _publisherService.GetOne(id);
+                return Ok(publisher); 
             }
-            return Ok(publisher);
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message }); 
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         // POST api/publishers
         [HttpPost]
-        public IActionResult Post(Publisher publisher)
+        public async Task<ActionResult<Publisher>> Post(Publisher publisher)
         {
-            _publisherRepository.Add(publisher);
-            return Ok(publisher);
+            try
+            {
+                var createdPublisher = await _publisherService.Add(publisher);
+                return Created(string.Empty, createdPublisher);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // PUT api/publishers/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, Publisher publisher)
+        public async Task<ActionResult<Publisher>> Put(int id, Publisher publisher)
         {
-            if (id != publisher.Id)
+            try
             {
-                return BadRequest();
+                var updatedPublisher = await _publisherService.Update(publisher);
+                return Ok(updatedPublisher);
+
+            } 
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
-            
-            return Ok(_publisherRepository.Update(publisher));
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message }); 
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message); 
+            }
         }
 
         // DELETE api/publishers/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var success = _publisherRepository.Delete(id);
-
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var success = await _publisherService.Delete(id);
 
-            return NoContent();
+                if (!success)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message); 
+            }
+            
         }
     }
 }

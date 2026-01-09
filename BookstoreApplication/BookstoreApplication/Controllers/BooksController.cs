@@ -1,6 +1,7 @@
 ﻿using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,100 +12,152 @@ namespace BookstoreApplication.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly BookRepository _bookRepository;
-        private readonly AuthorRepository _authorRepository;
-        private readonly PublisherRepository _publisherRepository;
+        
+        private readonly BookService _bookService;
+        private readonly AuthorService _authorService;
+        private readonly PublisherService _publisherService;
 
-        public BooksController(BookRepository bookRepository, AuthorRepository authorRepository, PublisherRepository publisherRepository)
+        public BooksController(AppDbContext context)
         {
-            _bookRepository = bookRepository;
-            _authorRepository = authorRepository;
-            _publisherRepository = publisherRepository;
+            _bookService = new BookService(context);
+            _authorService = new AuthorService(context);
+            _publisherService = new PublisherService(context);
         }
         // GET: api/books
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult <List<Book>>> GetAll()
         {
-            return Ok(_bookRepository.GetAll());
+            try
+            {
+                var books = await _bookService.GetAll();
+                return Ok(books);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // GET api/books/5
         [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
+        public async Task<ActionResult<Book>> GetOne(int id)
         {
-            var book = _bookRepository.GetOne(id);
-            if (book == null)
+            try
             {
-                return NotFound();
+                var book = await _bookService.GetById(id);
+                return Ok(book);
             }
-            return Ok(book);
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // POST api/books
         [HttpPost]
-        public IActionResult Post(Book book)
+        public async Task<ActionResult<Book>> Post(Book book)
         {
-            // kreiranje knjige je moguće ako je izabran postojeći autor
-            var author = _authorRepository.GetOne(book.AuthorId);
-            if (author == null)
+            try
             {
-                return BadRequest();
-            }
+                var author = await _authorService.GetOne(book.AuthorId);
+                if (author == null)
+                {
+                    return BadRequest();
+                }
+                
+                var publisher = await _publisherService.GetOne(book.PublisherId);
+                if (publisher == null)
+                {
+                    return BadRequest();
+                }
+                book.Author = author;
+                book.Publisher = publisher;
 
-            // kreiranje knjige je moguće ako je izabran postojeći izdavač
-            var publisher = _publisherRepository.GetOne(book.PublisherId);
-            if (publisher == null)
+                var createdBook = await _bookService.Create(book);
+                return Created(string.Empty, createdBook);
+            }
+            catch (ArgumentException e)
             {
-                return BadRequest();
+                return BadRequest(new { error = e.Message });
             }
-
-            book.Author = author;
-            book.Publisher = publisher;
-            _bookRepository.Add(book);
-            return Ok(book);
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // PUT api/books/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, Book book)
+        public async Task<ActionResult<Book>> Put(int id, Book book)
         {
-            if (id != book.Id)
+            try
             {
-                return BadRequest();
-            }
+                if (id != book.Id)
+                {
+                    return BadRequest();
+                }
+                
+                var author = await _authorService.GetOne(book.AuthorId);
+                if (author == null)
+                {
+                    return BadRequest();
+                }
 
-            // izmena knjige je moguca ako je izabran postojeći autor
-            var author = _authorRepository.GetOne(book.AuthorId);
-            if (author == null)
+                // izmena knjige je moguca ako je izabran postojeći izdavač
+                var publisher = await _publisherService.GetOne(book.PublisherId);
+                if (publisher == null)
+                {
+                    return BadRequest();
+                }
+
+                book.Author = author;
+                book.Publisher = publisher;
+                
+                var updatedBook = await _bookService.Update(book);
+                return Ok(updatedBook);
+            }
+            catch (ArgumentException e)
             {
-                return BadRequest();
+                return BadRequest(new { error = e.Message });
             }
-
-            // izmena knjige je moguca ako je izabran postojeći izdavač
-            var publisher = _publisherRepository.GetOne(book.PublisherId);
-            if (publisher == null)
+            catch (KeyNotFoundException e)
             {
-                return BadRequest();
+                return NotFound(new { error = e.Message });
             }
-
-            book.Author = author;
-            book.Publisher = publisher;
-            _bookRepository.Update(book);
-            return Ok(book);
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
 
         // DELETE api/books/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var success = _bookRepository.Delete(id);
-
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var success = await _bookService.Delete(id);
 
-            return NoContent();
+                if (!success)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(new { error = e.Message });
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
+            
         }
     }
 }

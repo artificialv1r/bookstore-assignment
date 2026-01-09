@@ -1,5 +1,6 @@
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookstoreApplication.Repositories;
 
@@ -11,41 +12,34 @@ public class AuthorRepository
         _context = context;
     }
 
-    public List<Author> GetAll()
+    public async Task <List<Author>> GetAll()
     {
-        return _context.Authors.ToList();
+        return await _context.Authors.ToListAsync();
     }
 
-    public Author GetOne(int id)
+    public async Task<Author?> GetOne(int id)
     {
-        return _context.Authors.Find(id);
+        return await _context.Authors.FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public Author Add(Author author)
+    public async Task<Author> Add(Author author)
     {
         _context.Authors.Add(author);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return author;
     }
 
-    public Author Update(Author author)
+    public async Task <Author> Update(Author author)
     {
         _context.Authors.Update(author);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return author;
     }
     
-    public bool Delete(int id)
+    public async Task Delete(int id)
     {
-        Author author = _context.Authors.Find(id);
-
-        if (author == null)
-        {
-            return false;
-        }
-        
+        Author author = await _context.Authors.FindAsync(id);
         _context.Authors.Remove(author);
-        _context.SaveChanges();
-        return true;
+        await _context.SaveChangesAsync();
     }
 }

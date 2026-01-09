@@ -12,47 +12,39 @@ public class BookRepository
         _context = context;
     }
 
-    public List<Book> GetAll()
+    public async Task<List<Book>> GetAll()
     {
-        return _context.Books
+        return await _context.Books
             .Include(b => b.Author)
             .Include(b => b.Publisher)
-            .ToList();
+            .ToListAsync();
     }
 
-    public Book GetOne(int id)
+    public async Task<Book> GetOne(int id)
     {
-        return _context.Books
+        return await _context.Books
                 .Include(b => b.Author)
                 .Include(b => b.Publisher)
-                .FirstOrDefault(b => b.Id == id);
+                .FirstOrDefaultAsync(b => b.Id == id);
     }
 
-    public Book Add(Book book)
+    public async Task<Book> Add(Book book)
     {
         _context.Books.Add(book);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return book;
     }
 
-    public Book Update(Book book)
+    public async Task<Book> Update(Book book)
     {
         _context.Books.Update(book);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return book;
     }
     
-    public bool Delete(int id)
-    {
-        Book book = _context.Books.Find(id);
-
-        if (book == null)
-        {
-            return false;
-        }
-        
+    public async Task Delete(Book book)
+    { 
         _context.Books.Remove(book);
-        _context.SaveChanges();
-        return true;
+       await _context.SaveChangesAsync();
     }
 }
