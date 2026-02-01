@@ -1,5 +1,6 @@
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
+using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,21 +8,21 @@ namespace BookstoreApplication.Services;
 
 public class PublisherService
 {
-    private readonly PublisherRepository _publisherRepository;
+    private readonly IPublisherRepository _repository;
 
-    public PublisherService(AppDbContext context)
+    public PublisherService(IPublisherRepository repository)
     {
-        _publisherRepository = new PublisherRepository(context);
+        _repository = repository;
     }
 
     public async Task<List<Publisher>> GetAll()
     {
-        return await  _publisherRepository.GetAll();
+        return await  _repository.GetAll();
     }
 
     public async Task<Publisher> GetOne(int id)
     {
-        var publisher = await _publisherRepository.GetOne(id);
+        var publisher = await _repository.GetOne(id);
             
         if (publisher == null)
         {
@@ -38,7 +39,7 @@ public class PublisherService
             throw new ArgumentNullException(nameof(publisher));
         }
         
-        await  _publisherRepository.Add(publisher);
+        await  _repository.Add(publisher);
         return publisher;
     }
     
@@ -49,24 +50,24 @@ public class PublisherService
             throw new ArgumentNullException(nameof(publisher));
         }
         
-        var existingPublisher = await _publisherRepository.GetOne(publisher.Id);
+        var existingPublisher = await _repository.GetOne(publisher.Id);
         if (existingPublisher == null)
         {
             throw new KeyNotFoundException($"Publisher with id {publisher.Id} was not found.");
         }
         
-        await  _publisherRepository.Update(publisher);
+        await  _repository.Update(publisher);
         return publisher;
     }
     
     public async Task<bool> Delete(int id)
     {
-        var publisher = await _publisherRepository.GetOne(id);
+        var publisher = await _repository.GetOne(id);
         if (publisher == null)
         {
             return false;
         }
-        await  _publisherRepository.Delete(id);
+        await  _repository.Delete(id);
         return true;
     } 
 }

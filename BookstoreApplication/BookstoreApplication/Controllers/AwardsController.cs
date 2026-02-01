@@ -1,5 +1,7 @@
+using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookstoreApplication.Controllers
@@ -9,64 +11,112 @@ namespace BookstoreApplication.Controllers
     
     public class AwardsController: ControllerBase
     {
-        private readonly AwardRepository _awardRepository;
+        private readonly AwardService _awardService;
 
-        public AwardsController(AwardRepository awardRepository)
+        public AwardsController(AppDbContext context)
         {
-            _awardRepository = awardRepository;
+            _awardService = new AwardService(new AwardRepository(context));
         }
         
         // GET: api/awards
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult<List<Award>>> GetAll()
         {
-            return Ok(_awardRepository.GetAll());
+            try
+            {
+                var awards = await _awardService.GetAll();
+                return Ok(awards);
+            }catch(Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
         
         // GET api/awards/5
         [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
+        public async Task<ActionResult<Award>> GetOne(int id)
         {
-            var award = _awardRepository.GetOne(id);
-            if (award == null)
+            try
             {
-                return NotFound();
+                var award = await _awardService.GetOne(id);
+                return Ok(award);
             }
-            return Ok(award);
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
         
         // POST api/awards
         [HttpPost]
-        public IActionResult Post(Award award)
+        public async Task<ActionResult<Award>> Post(Award award)
         {
-            _awardRepository.Add(award);
-            return Ok(award);
+            try
+            {
+                var createdAward = await _awardService.Create(award);
+                return Created(string.Empty, createdAward);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
         
         // PUT api/awards/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, Award award)
+        public async Task<ActionResult<Award>> Put(int id, Award award)
         {
-            if (id != award.Id)
+            try
             {
-                return BadRequest();
+                var updatedAward = await _awardService.Update(award);
+                return Ok(updatedAward);
             }
-            
-            return Ok(_awardRepository.Update(award));
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
         
         // DELETE api/awards/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var success = _awardRepository.Delete(id);
-
-            if (!success)
+            try
             {
-                return NotFound();
-            }
+                var success = await _awardService.Delete(id);
 
-            return NoContent();
+                if (!success)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return Problem(e.Message);
+            }
         }
     }
 }

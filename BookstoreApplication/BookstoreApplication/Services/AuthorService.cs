@@ -1,26 +1,27 @@
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
+using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
 
 namespace BookstoreApplication.Services;
 
 public class AuthorService
 {
-    private readonly AuthorRepository _authorRepository;
+    private readonly IAuthorRepository _repository;
 
-    public AuthorService(AppDbContext context)
+    public AuthorService(IAuthorRepository repository)
     {
-        _authorRepository = new AuthorRepository(context);
+        _repository = repository;
     }
 
     public async Task<List<Author>> GetAll()
     {
-        return await  _authorRepository.GetAll();
+        return await  _repository.GetAll();
     }
 
     public async Task<Author> GetOne(int id)
     {
-        var author = await  _authorRepository.GetOne(id);
+        var author = await  _repository.GetOne(id);
         if (author == null)
         {
             throw new KeyNotFoundException($"Author with id {id} not found");
@@ -35,7 +36,7 @@ public class AuthorService
             throw new ArgumentNullException(nameof(author));
         }
         
-        await  _authorRepository.Add(author);
+        await  _repository.Add(author);
         return author;
     }
 
@@ -46,24 +47,24 @@ public class AuthorService
             throw new ArgumentNullException(nameof(author));
         }
 
-        var existingAuthor = await _authorRepository.GetOne(author.Id);
+        var existingAuthor = await _repository.GetOne(author.Id);
         if (existingAuthor == null)
         {
             throw new KeyNotFoundException("Author not found");
         }
         
-        await  _authorRepository.Update(author);
+        await  _repository.Update(author);
         return author;
     }
 
     public async Task<bool> Delete(int id)
     {
-        var author = await _authorRepository.GetOne(id);
+        var author = await _repository.GetOne(id);
         if (author == null)
         {
             return false;
         }
-        await  _authorRepository.Delete(id);
+        await  _repository.Delete(id);
         return true;
     }
 }

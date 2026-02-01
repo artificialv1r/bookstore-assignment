@@ -1,10 +1,11 @@
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
+using BookstoreApplication.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookstoreApplication.Repositories;
 
-public class AuthorRepository
+public class AuthorRepository: IAuthorRepository
 {
     private AppDbContext _context;
     
@@ -31,9 +32,20 @@ public class AuthorRepository
 
     public async Task <Author> Update(Author author)
     {
-        _context.Authors.Update(author);
+        var existingAuthor = await _context.Authors
+            .FirstOrDefaultAsync(a => a.Id == author.Id);
+
+        if (existingAuthor == null)
+        {
+            return null;
+        }
+
+        existingAuthor.FullName = author.FullName;
+        existingAuthor.Biography = author.Biography;
+        existingAuthor.DateOfBirth = author.DateOfBirth;
+
         await _context.SaveChangesAsync();
-        return author;
+        return existingAuthor;
     }
     
     public async Task Delete(int id)

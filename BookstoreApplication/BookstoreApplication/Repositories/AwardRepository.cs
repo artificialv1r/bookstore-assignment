@@ -1,9 +1,11 @@
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
+using BookstoreApplication.Models.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookstoreApplication.Repositories;
 
-public class AwardRepository
+public class AwardRepository  : IAwardRepository
 {
     private AppDbContext _context;
     
@@ -12,33 +14,42 @@ public class AwardRepository
         _context = context;
     }
 
-    public List<Award> GetAll()
+    public async Task<List<Award>> GetAll()
     {
-        return _context.Awards.ToList();
+        return await _context.Awards.ToListAsync();
     }
 
-    public Award GetOne(int id)
+    public async Task<Award> GetOne(int id)
     {
-        return _context.Awards.Find(id);
+        return await _context.Awards.FindAsync(id);
     }
 
-    public Award Add(Award award)
+    public async Task<Award> Add(Award award)
     {
         _context.Awards.Add(award);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return award;
     }
 
-    public Award Update(Award award)
+    public async Task<Award> Update(Award award)
     {
-        _context.Awards.Update(award);
-        _context.SaveChanges();
-        return award;
+        var existingAward = await _context.Awards.FirstOrDefaultAsync(a => a.Id == award.Id);
+        if (existingAward == null)
+        {
+            return null;
+        }
+        
+        existingAward.Name = award.Name;
+        existingAward.Description = award.Description;
+        existingAward.YearOfFirstAssignment = award.YearOfFirstAssignment;
+        
+        _context.SaveChangesAsync();
+        return existingAward;
     }
 
-    public bool Delete(int id)
+    public async Task <bool> Delete(int id)
     {
-        Award award = _context.Awards.Find(id);
+        Award award = await _context.Awards.FindAsync(id);
 
         if (award == null)
         {
@@ -46,7 +57,7 @@ public class AwardRepository
         }
         
         _context.Awards.Remove(award);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return true;
     }
 }

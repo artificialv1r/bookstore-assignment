@@ -16,7 +16,7 @@ namespace BookstoreApplication.Controllers
         
         public AuthorsController(AppDbContext context)
         {
-            _authorService = new AuthorService(context) ;
+            _authorService = new AuthorService(new AuthorRepository(context)) ;
         }
         
         // GET: api/authors
