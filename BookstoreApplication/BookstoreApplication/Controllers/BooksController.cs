@@ -2,6 +2,8 @@
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
 using BookstoreApplication.Services;
+using BookstoreApplication.Services.DTOs;
+using BookstoreApplication.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,24 +15,23 @@ namespace BookstoreApplication.Controllers
     public class BooksController : ControllerBase
     {
         
-        private readonly BookService _bookService;
-        private readonly AuthorService _authorService;
-        private readonly PublisherService _publisherService;
+        private readonly IBookService _bookService;
+        private readonly IAuthorService _authorService;
+        private readonly IPublisherService _publisherService;
 
-        public BooksController(AppDbContext context)
+        public BooksController(IBookService bookService, IAuthorService authorService, IPublisherService publisherService)
         {
-            _bookService = new BookService(new BookRepository(context));
-            _authorService = new AuthorService(new AuthorRepository(context));
-            _publisherService = new PublisherService(new PublisherRepository(context));
+            _bookService = bookService;
+            _authorService = authorService;
+            _publisherService = publisherService;
         }
         // GET: api/books
         [HttpGet]
-        public async Task<ActionResult <List<Book>>> GetAll()
+        public async Task<ActionResult> GetAll()
         {
             try
             {
-                var books = await _bookService.GetAll();
-                return Ok(books);
+                return Ok(await _bookService.GetAll());
             }
             catch (Exception e)
             {
@@ -40,12 +41,11 @@ namespace BookstoreApplication.Controllers
 
         // GET api/books/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetOne(int id)
+        public async Task<ActionResult> GetOne(int id)
         {
             try
             {
-                var book = await _bookService.GetById(id);
-                return Ok(book);
+                return Ok(await _bookService.GetById(id));
             }
             catch (KeyNotFoundException e)
             {

@@ -1,11 +1,11 @@
-using BookstoreApplication.Data;
+
 using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
-using BookstoreApplication.Repositories;
+using BookstoreApplication.Services.Interfaces;
 
 namespace BookstoreApplication.Services;
 
-public class AuthorService
+public class AuthorService: IAuthorService
 {
     private readonly IAuthorRepository _repository;
 
@@ -17,6 +17,11 @@ public class AuthorService
     public async Task<List<Author>> GetAll()
     {
         return await  _repository.GetAll();
+    }
+
+    public Task<Author> GetById(int id)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<Author> GetOne(int id)

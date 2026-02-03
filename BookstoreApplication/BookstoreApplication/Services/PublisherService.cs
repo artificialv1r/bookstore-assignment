@@ -2,11 +2,12 @@ using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookstoreApplication.Services;
 
-public class PublisherService
+public class PublisherService : IPublisherService
 {
     private readonly IPublisherRepository _repository;
 

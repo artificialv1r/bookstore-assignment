@@ -1,25 +1,31 @@
-using BookstoreApplication.Data;
+using AutoMapper;
 using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
-using BookstoreApplication.Repositories;
+using BookstoreApplication.Services.DTOs;
+using BookstoreApplication.Services.Interfaces;
 
 namespace BookstoreApplication.Services;
 
-public class BookService
+public class BookService : IBookService
 {
     private readonly IBookRepository _repository;
+    private readonly IMapper _mapper;
 
-    public BookService(IBookRepository repository)
+    public BookService(IBookRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<List<Book>> GetAll()
+    public async Task<List<BookDto>> GetAll()
     {
-        return await  _repository.GetAll();
+        var books = await _repository.GetAll();
+        return books
+            .Select(_mapper.Map<BookDto>)
+            .ToList();
     }
 
-    public async Task<Book> GetById(int id)
+    public async Task<BookDetailsDto> GetById(int id)
     {
         var book = await _repository.GetOne(id);
 
@@ -28,7 +34,7 @@ public class BookService
             throw new  KeyNotFoundException("Book not found");
         }
         
-        return book;
+        return _mapper.Map<BookDetailsDto>(book);
     }
 
     public async Task<Book> Create(Book book)
