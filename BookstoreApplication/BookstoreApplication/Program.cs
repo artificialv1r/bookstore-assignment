@@ -1,3 +1,4 @@
+using BookstoreApplication.Controllers.Middleware;
 using BookstoreApplication.Data;
 using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
@@ -39,6 +40,8 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
 
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
+
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddProfile<MappingProfile>();
 });
@@ -54,6 +57,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

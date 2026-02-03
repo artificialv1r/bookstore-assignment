@@ -23,103 +23,56 @@ namespace BookstoreApplication.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Publisher>>> GetAll()
         {
-            try
-            {
-                var publishers = await _publisherService.GetAll();
-                return Ok(publishers);
-            }
-            catch (Exception e)
-            {
-                return Problem(e.Message);
-            }
+            var publishers = await _publisherService.GetAll();
+            return Ok(publishers);
+            
         }
 
         // GET api/publishers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Publisher>> GetOne(int id)
         {
-            try
-            {
-                var publisher = await _publisherService.GetOne(id);
-                return Ok(publisher); 
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message }); 
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            var publisher = await _publisherService.GetOne(id);
+            return Ok(publisher); 
         }
 
         // POST api/publishers
         [HttpPost]
         public async Task<ActionResult<Publisher>> Post(Publisher publisher)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var createdPublisher = await _publisherService.Add(publisher);
-                return Created(string.Empty, createdPublisher);
+                return BadRequest(ModelState);
+
             }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { error = e.Message });
-            }
-            catch (Exception e)
-            {
-                return Problem(e.Message);
-            }
+            var createdPublisher = await _publisherService.Add(publisher);
+            return Created(string.Empty, createdPublisher);
         }
 
         // PUT api/publishers/5
         [HttpPut("{id}")]
         public async Task<ActionResult<Publisher>> Put(int id, Publisher publisher)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var updatedPublisher = await _publisherService.Update(publisher);
-                return Ok(updatedPublisher);
+                return BadRequest(ModelState);
 
-            } 
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { error = ex.Message });
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message }); 
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message); 
-            }
+            
+            var updatedPublisher = await _publisherService.Update(publisher);
+            return Ok(updatedPublisher);
         }
 
         // DELETE api/publishers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
+            var success = await _publisherService.Delete(id);
+            if (!success)
             {
-                var success = await _publisherService.Delete(id);
-
-                if (!success)
-                {
-                    return NotFound();
-                }
-
-                return NoContent();
+                return NotFound();
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message); 
-            }
-            
+            return NoContent();
         }
     }
 }

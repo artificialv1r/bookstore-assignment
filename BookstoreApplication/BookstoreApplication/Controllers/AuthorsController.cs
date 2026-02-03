@@ -56,68 +56,37 @@ namespace BookstoreApplication.Controllers
         [HttpPost]
         public async Task<ActionResult<Author>> Post(Author author)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var createdAuthor = await _authorService.Create(author);
-                return Created(string.Empty, createdAuthor);
+                return BadRequest(ModelState);
+
             }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { error = e.Message });
-            }
-            catch (Exception e)
-            {
-                return Problem(e.Message);
-            }
+            var createdAuthor = await _authorService.Create(author);
+            return Created(string.Empty, createdAuthor);
         }
 
         // PUT api/authors/5
         [HttpPut("{id}")]
         public async Task<ActionResult<Author>> Put(int id, Author author)
         {
-            try
-            {
-                var updatedAuthor = await _authorService.Update(author);
-                return Ok(updatedAuthor);
-
+            if (!ModelState.IsValid)
+            { 
+                return BadRequest(ModelState);
             }
-            catch (ArgumentException e)
-            {
-                return BadRequest(new { error = e.Message });
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(new { error = e.Message });
-            }
-            catch (Exception e)
-            {
-                return Problem(e.Message);
-            }
+            var updatedAuthor = await _authorService.Update(author);
+            return Ok(updatedAuthor);
         }
 
         // DELETE api/authors/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                var success = await _authorService.Delete(id);
-
-                if (!success)
-                {
-                    return NotFound();
-                }
-
-                return NoContent();
+            var success = await _authorService.Delete(id);
+            if (!success) 
+            { 
+                return NotFound();
             }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(new { error = e.Message });
-            }
-            catch (Exception e)
-            {
-                return Problem(e.Message);
-            }
+            return NoContent();
         }
     }
 }
