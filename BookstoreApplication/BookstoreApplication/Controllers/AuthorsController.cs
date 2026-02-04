@@ -2,6 +2,7 @@
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
 using BookstoreApplication.Services;
+using BookstoreApplication.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,11 +13,11 @@ namespace BookstoreApplication.Controllers
     [ApiController]
     public class AuthorsController : ControllerBase
     {
-        private readonly AuthorService _authorService;
+        private readonly IAuthorService _authorService;
         
-        public AuthorsController(AppDbContext context)
+        public AuthorsController(IAuthorService authorService)
         {
-            _authorService = new AuthorService(new AuthorRepository(context)) ;
+            _authorService = authorService ;
         }
         
         // GET: api/authors

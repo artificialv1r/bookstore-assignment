@@ -6,6 +6,7 @@ using BookstoreApplication.Services;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,13 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddAutoMapper(cfg => {
     cfg.AddProfile<MappingProfile>();
 });
+
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 
 var app = builder.Build();
