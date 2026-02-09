@@ -2,7 +2,9 @@
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories;
 using BookstoreApplication.Services;
+using BookstoreApplication.Services.Exceptions;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -88,6 +90,16 @@ namespace BookstoreApplication.Controllers
                 return NotFound();
             }
             return NoContent();
+        }
+
+        [HttpGet("paging")]
+        public async Task<ActionResult<PaginatedList<Author>>> GetAuthorsPage([FromQuery] int page = 1)
+        {
+            if (page < 1)
+            {
+                return BadRequest(ModelState);
+            }
+            return Ok(await _authorService.GetAuthorsPage(page));
         }
     }
 }

@@ -1,8 +1,11 @@
 
+using AutoMapper;
 using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
+using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Exceptions;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Utils;
 
 namespace BookstoreApplication.Services;
 
@@ -10,11 +13,15 @@ public class AuthorService: IAuthorService
 {
     private readonly IAuthorRepository _repository;
     private readonly ILogger<AuthorService> _logger;
+    private readonly IMapper _mapper;
+    private const int PageSize = 4;
 
-    public AuthorService(IAuthorRepository repository, ILogger<AuthorService> logger)
+
+    public AuthorService(IAuthorRepository repository, ILogger<AuthorService> logger, IMapper mapper)
     {
         _repository = repository;
         _logger = logger;
+        _mapper = mapper;
     }
 
     public async Task<List<Author>> GetAll()
@@ -83,5 +90,14 @@ public class AuthorService: IAuthorService
         await  _repository.Delete(id);
         _logger.LogInformation($"Deleted author with id:{id}.");
         return true;
+    }
+
+    public async Task<PaginatedList<AuthorDto>> GetAuthorsPage(int page)
+    {
+        var authors = await _repository.GetAllPaged(page);
+        var dtos = authors.Items
+            .Select(_mapper.Map<AuthorDto>).ToList();
+
+        return new PaginatedList<AuthorDto>(dtos, authors.Count, authors.PageIndex, PageSize);
     }
 }
