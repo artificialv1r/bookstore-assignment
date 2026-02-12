@@ -12,4 +12,5 @@ public interface IBookService
     Task<Book> Update(Book book);
     Task<bool> Delete(int id);
     Task<PaginatedList<BookDetailsDto>> GetAllSorted(int page, BookSortType sortType);
+    Task<PaginatedList<BookDetailsDto>> GetAllFilteredAndSorted(int page, BookSearchQuery bookSearchQuery,  BookSortType sortType);
 }

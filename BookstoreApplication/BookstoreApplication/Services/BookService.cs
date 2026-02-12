@@ -95,4 +95,13 @@ public class BookService : IBookService
             .Select(_mapper.Map<BookDetailsDto>).ToList();
         return new PaginatedList<BookDetailsDto>(dtos, books.Count, books.PageIndex, PageSize);
     }
+
+    public async Task<PaginatedList<BookDetailsDto>> GetAllFilteredAndSorted(int page, BookSearchQuery bookSearchQuery,  BookSortType sortType)
+    {
+        int PageSize = 5;
+        var books = await _repository.GetAllFilteredAndSorted(page, bookSearchQuery, sortType);
+        var dtos = books.Items
+            .Select(_mapper.Map<BookDetailsDto>).ToList();
+        return new PaginatedList<BookDetailsDto>(dtos, books.Count, books.PageIndex, PageSize);
+    }
 }

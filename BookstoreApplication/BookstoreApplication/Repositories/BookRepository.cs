@@ -74,4 +74,70 @@ public class BookRepository: IBookRepository
         PaginatedList<Book> result = new PaginatedList<Book>(items, count, pageIndex, PageSize);
         return result;
     }
+
+    public async Task<PaginatedList<Book>> GetAllFilteredAndSorted(int page, BookSearchQuery bookSearchQuery, BookSortType sortType)
+    {
+        IQueryable<Book> books = _context.Books
+            .Include(b => b.Author)
+            .Include(b => b.Publisher);
+
+        books = FilterBooks(books, bookSearchQuery);
+        
+        books = sortType switch
+        {
+            BookSortType.TitleDesc => books.OrderByDescending(b => b.Title),
+            BookSortType.DateAsc => books.OrderBy(b => b.PublishedDate),
+            BookSortType.DateDesc => books.OrderByDescending(b => b.PublishedDate),
+            BookSortType.AuthorNameAsc => books.OrderBy(b => b.Author.FullName),
+            BookSortType.AuthorNameDesc => books.OrderByDescending(b => b.Author.FullName),
+            _ => books.OrderBy(b => b.Title)
+        };
+        
+        int PageSize = 5;
+        int pageIndex = page - 1;
+        var count = await books.CountAsync();
+        var items = await books.Skip(pageIndex * PageSize).Take(PageSize).ToListAsync();
+        PaginatedList<Book> result = new PaginatedList<Book>(items, count, pageIndex, PageSize);
+        return result;
+    }
+
+    private static IQueryable<Book> FilterBooks(IQueryable<Book> books, BookSearchQuery bookSearchQuery)
+    {
+        if (!string.IsNullOrEmpty(bookSearchQuery.Title))
+        {
+            books = books.Where(b=>b.Title.ToLower().Contains(bookSearchQuery.Title.ToLower()));
+        }
+        
+        if (bookSearchQuery.PublishedFrom != null)
+        {
+            books = books.Where(b => b.PublishedDate >= bookSearchQuery.PublishedFrom);
+        }
+        
+        if (bookSearchQuery.PublishedTo != null)
+        {
+            books = books.Where(b => b.PublishedDate <= bookSearchQuery.PublishedTo);
+        }
+        
+        if (bookSearchQuery.AuthorId != null)
+        {
+            books = books.Where(b => b.AuthorId == bookSearchQuery.AuthorId);
+        }
+        
+        if (!string.IsNullOrEmpty(bookSearchQuery.Author))
+        {
+            books = books.Where(b=>b.Author.FullName.ToLower().Contains(bookSearchQuery.Author.ToLower()));
+        }
+        
+        if (bookSearchQuery.AuthorBirthFrom != null)
+        {
+            books = books.Where(b => b.Author.DateOfBirth >= bookSearchQuery.AuthorBirthFrom);
+        }
+        
+        if (bookSearchQuery.AuthorBirthTo != null)
+        {
+            books = books.Where(b => b.Author.DateOfBirth <= bookSearchQuery.AuthorBirthTo);
+        }
+        
+        return books;
+    }
 }

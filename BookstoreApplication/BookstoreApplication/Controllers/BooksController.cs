@@ -125,5 +125,16 @@ namespace BookstoreApplication.Controllers
             
             return Ok(await _bookService.GetAllSorted(page, sortType));
         }
+
+        [HttpGet("filter")]
+        public async Task<ActionResult<PaginatedList<BookDetailsDto>>> GetBooksFiltered([FromQuery] BookSearchQuery bookSearchQuery, [FromQuery] int page = 1, [FromQuery] BookSortType sortType = BookSortType.TitleAsc)
+        {
+            if (page < 1)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            return Ok(await _bookService.GetAllFilteredAndSorted(page, bookSearchQuery, sortType));
+        }
     }
 }

@@ -11,4 +11,5 @@ public interface IBookRepository
     Task<Book> Update(Book book);
     Task Delete(Book book);
     Task<PaginatedList<Book>> GetAllSorted(int page, BookSortType sortType);
+    Task<PaginatedList<Book>> GetAllFilteredAndSorted(int page, BookSearchQuery bookSearchQuery,  BookSortType sortType);
 }
