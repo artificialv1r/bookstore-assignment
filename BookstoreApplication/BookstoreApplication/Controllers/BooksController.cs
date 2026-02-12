@@ -4,6 +4,7 @@ using BookstoreApplication.Repositories;
 using BookstoreApplication.Services;
 using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -111,6 +112,18 @@ namespace BookstoreApplication.Controllers
                 return NotFound();
             }
             return NoContent();
+        }
+        
+        [HttpGet("sorting")]
+        public async Task<ActionResult<PaginatedList<BookDetailsDto>>> GetBooksSorted([FromQuery] int page = 1,
+            [FromQuery] BookSortType sortType = BookSortType.TitleAsc)
+        {
+            if (page < 1)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            return Ok(await _bookService.GetAllSorted(page, sortType));
         }
     }
 }

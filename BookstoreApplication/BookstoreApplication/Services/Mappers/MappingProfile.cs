@@ -20,7 +20,7 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.Publisher,
                 opt => opt.MapFrom(src => src.Publisher.Name)
-            );
+            ).ReverseMap();
         CreateMap<Book, BookDetailsDto>()
             .ForMember(
                 dest => dest.Author,
@@ -29,7 +29,7 @@ public class MappingProfile : Profile
             .ForMember(
                 dest => dest.Publisher,
                 opt => opt.MapFrom(src => src.Publisher.Name)
-            );
+            ).ReverseMap();
         CreateMap<Author, AuthorDto>().ReverseMap();
 
     }

@@ -4,6 +4,7 @@ using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Exceptions;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Utils;
 
 namespace BookstoreApplication.Services;
 
@@ -84,5 +85,14 @@ public class BookService : IBookService
         await _repository.Delete(book);
         _logger.LogInformation($"Book with id:{book.Id}, deleted successfully");
         return true;
+    }
+
+    public async Task<PaginatedList<BookDetailsDto>> GetAllSorted(int page, BookSortType sortType)
+    {
+        int PageSize = 5;
+        var books = await _repository.GetAllSorted(page, sortType);
+        var dtos = books.Items
+            .Select(_mapper.Map<BookDetailsDto>).ToList();
+        return new PaginatedList<BookDetailsDto>(dtos, books.Count, books.PageIndex, PageSize);
     }
 }
