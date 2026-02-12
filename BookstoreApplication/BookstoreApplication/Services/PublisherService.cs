@@ -2,8 +2,10 @@ using BookstoreApplication.Data;
 using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
+using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Exceptions;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookstoreApplication.Services;
@@ -86,5 +88,13 @@ public class PublisherService : IPublisherService
         await  _repository.Delete(id);
         _logger.LogInformation($"Deleted publisher {publisher.Name} with id:{publisher.Id}.");
         return true;
-    } 
+    }
+
+    public async Task<PaginatedList<Publisher>> GetAllSorted(int page, PublisherSortType sortType)
+    {
+        int PageSize = 5;
+        var publishers = await _repository.GetAllSorted(page, sortType);
+        var items = publishers.Items;
+        return new PaginatedList<Publisher>(items, publishers.Count, publishers.PageIndex, PageSize);
+    }
 }
