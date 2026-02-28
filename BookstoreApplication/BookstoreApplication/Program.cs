@@ -1,10 +1,12 @@
 using BookstoreApplication.Controllers.Middleware;
 using BookstoreApplication.Data;
+using BookstoreApplication.Models;
 using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Repositories;
 using BookstoreApplication.Services;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.Services.Mappers;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -23,7 +25,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins("http://localhost:5173")
+                .WithOrigins("http://localhost:5174")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -31,6 +33,25 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Registracija Identity-a
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+// Definisanje uslova koje lozinka mora da ispuni
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = true;          // Ima bar jednu cifru
+    options.Password.RequireLowercase = true;      // Ima bar jedno malo slovo
+    options.Password.RequireUppercase = true;      // Ima bar jedno veliko slovo
+    options.Password.RequireNonAlphanumeric = true;// Ima bar jedan specijalan karakter (!, @, #...)
+    options.Password.RequiredLength = 8;           // Ima bar 8 karaktera
+});
+
+// Dodavanje autentifikacije
+builder.Services.AddAuthentication();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
@@ -54,7 +75,6 @@ var logger = new LoggerConfiguration()
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -68,7 +88,6 @@ app.UseCors("AllowFrontend");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

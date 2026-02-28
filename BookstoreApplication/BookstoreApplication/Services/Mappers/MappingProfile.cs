@@ -31,7 +31,7 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(src => src.Publisher.Name)
             ).ReverseMap();
         CreateMap<Author, AuthorDto>().ReverseMap();
-
+        CreateMap<RegistrationDto, ApplicationUser>();
     }
     
 }
