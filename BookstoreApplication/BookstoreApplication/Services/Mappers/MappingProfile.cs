@@ -32,6 +32,7 @@ public class MappingProfile : Profile
             ).ReverseMap();
         CreateMap<Author, AuthorDto>().ReverseMap();
         CreateMap<RegistrationDto, ApplicationUser>();
+        CreateMap<ApplicationUser, ProfileDto>();
     }
     
 }

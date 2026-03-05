@@ -1,5 +1,6 @@
 using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookstoreApplication.Controllers;
@@ -32,7 +33,15 @@ public class AuthController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        await _authService.Login(data);
-        return Ok();
+        var token = await _authService.Login(data);
+        return Ok(new { token });
     }
+    
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        return Ok(await _authService.GetProfile(User));
+    }
+
 }
