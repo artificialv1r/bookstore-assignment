@@ -5,6 +5,7 @@ using BookstoreApplication.Services;
 using BookstoreApplication.Services.DTOs;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -43,6 +44,7 @@ namespace BookstoreApplication.Controllers
         }
 
         // POST api/books
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Book>> Post(Book book)
         {
@@ -72,6 +74,7 @@ namespace BookstoreApplication.Controllers
         }
 
         // PUT api/books/5
+        [Authorize (Roles = "Editor")]
         [HttpPut("{id}")]
         public async Task<ActionResult<Book>> Put(int id, Book book)
         {
@@ -103,6 +106,7 @@ namespace BookstoreApplication.Controllers
         }
 
         // DELETE api/books/5
+        [Authorize (Roles = "Editor")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

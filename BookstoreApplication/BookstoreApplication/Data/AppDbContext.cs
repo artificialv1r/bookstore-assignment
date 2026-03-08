@@ -1,4 +1,5 @@
 using BookstoreApplication.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,10 @@ public class AppDbContext: IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Name = "Librarian", NormalizedName = "LIBRARIAN" },
+            new IdentityRole { Name = "Editor", NormalizedName = "EDITOR" }
+        );
         
         modelBuilder.Entity<AuthorAward>(entity =>
         {

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using BookstoreApplication;
 using BookstoreApplication.Controllers.Middleware;
 using BookstoreApplication.Data;
 using BookstoreApplication.Models;
@@ -132,6 +133,12 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedData.InitializeAsync(services);
+}
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -143,6 +150,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
